@@ -1,0 +1,132 @@
+diff --git a/bottom_navigator_bar_lab/lib/main.dart b/bottom_navigator_bar_lab/lib/main.dart
+index 84dc86b..91ab6ac 100644
+--- a/bottom_navigator_bar_lab/lib/main.dart
++++ b/bottom_navigator_bar_lab/lib/main.dart
+@@ -1,9 +1,11 @@
+ import 'package:flutter/material.dart';
++import 'package:provider/provider.dart';
+ 
+ import 'screen1.dart';
+ import 'screen2.dart';
+ import 'screen3.dart';
+ import 'screen4.dart';
++import 'tab_model.dart';
+ 
+ void main() {
+   runApp(const MyApp());
+@@ -14,9 +16,12 @@ class MyApp extends StatelessWidget {
+ 
+   @override
+   Widget build(BuildContext context) {
+-    return const MaterialApp(
+-      debugShowCheckedModeBanner: false,
+-      home: BottomNavLab(),
++    return ChangeNotifierProvider(
++      create: (context) => TabModel(),
++      child: const MaterialApp(
++        debugShowCheckedModeBanner: false,
++        home: BottomNavLab(),
++      ),
+     );
+   }
+ }
+@@ -29,7 +34,6 @@ class BottomNavLab extends StatefulWidget {
+ }
+ 
+ class _BottomNavLabState extends State<BottomNavLab> {
+-  int currentIndex = 0;
+   final List<Widget> screens = const [
+     Screen1(),
+     Screen2(),
+@@ -39,23 +43,22 @@ class _BottomNavLabState extends State<BottomNavLab> {
+ 
+   @override
+   Widget build(BuildContext context) {
++    final tabModel = Provider.of<TabModel>(context);
+     return Scaffold(
+       appBar: AppBar(
+         title: const Text('Bottom Navigation Bar'),
+         backgroundColor: Colors.blue,
+         foregroundColor: Colors.white,
+       ),
+-      body: screens[currentIndex],
++      body: screens[tabModel.currentIndex],
+       bottomNavigationBar: BottomNavigationBar(
+         type: BottomNavigationBarType.fixed,
+         fixedColor: Colors.white,
+         backgroundColor: Colors.blue,
+         iconSize: 30,
+-        currentIndex: currentIndex,
++        currentIndex: tabModel.currentIndex,
+         onTap: (int index) {
+-          setState(() {
+-            currentIndex = index;
+-          });
++          Provider.of<TabModel>(context, listen: false).setIndex(index);
+         },
+         items: const [
+           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+diff --git a/bottom_navigator_bar_lab/lib/tab_model.dart b/bottom_navigator_bar_lab/lib/tab_model.dart
+new file mode 100644
+index 0000000..3e8cab0
+--- /dev/null
++++ b/bottom_navigator_bar_lab/lib/tab_model.dart
+@@ -0,0 +1,12 @@
++import 'package:flutter/material.dart';
++
++class TabModel extends ChangeNotifier {
++  int _currentIndex = 0;
++
++  int get currentIndex => _currentIndex;
++
++  void setIndex(int index) {
++    _currentIndex = index;
++    notifyListeners();
++  }
++}
+diff --git a/bottom_navigator_bar_lab/pubspec.lock b/bottom_navigator_bar_lab/pubspec.lock
+index c081ff4..f0efaca 100644
+--- a/bottom_navigator_bar_lab/pubspec.lock
++++ b/bottom_navigator_bar_lab/pubspec.lock
+@@ -131,6 +131,14 @@ packages:
+       url: "https://pub.dev"
+     source: hosted
+     version: "1.18.3"
++  nested:
++    dependency: transitive
++    description:
++      name: nested
++      sha256: "03bac4c528c64c95c722ec99280375a6f2fc708eec17c7b3f07253b626cd2a20"
++      url: "https://pub.dev"
++    source: hosted
++    version: "1.0.0"
+   path:
+     dependency: transitive
+     description:
+@@ -139,6 +147,14 @@ packages:
+       url: "https://pub.dev"
+     source: hosted
+     version: "1.9.1"
++  provider:
++    dependency: "direct main"
++    description:
++      name: provider
++      sha256: "4e82183fa20e5ca25703ead7e05de9e4cceed1fbd1eadc1ac3cb6f565a09f272"
++      url: "https://pub.dev"
++    source: hosted
++    version: "6.1.5+1"
+   sky_engine:
+     dependency: transitive
+     description: flutter
+diff --git a/bottom_navigator_bar_lab/pubspec.yaml b/bottom_navigator_bar_lab/pubspec.yaml
+index 9c6b783..f868bf5 100644
+--- a/bottom_navigator_bar_lab/pubspec.yaml
++++ b/bottom_navigator_bar_lab/pubspec.yaml
+@@ -34,6 +34,7 @@ dependencies:
+   # The following adds the Cupertino Icons font to your application.
+   # Use with the CupertinoIcons class for iOS style icons.
+   cupertino_icons: ^1.0.8
++  provider: ^6.1.5+1
+ 
+ dev_dependencies:
+   flutter_test:
