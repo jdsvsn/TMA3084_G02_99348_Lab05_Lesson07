@@ -1,30 +1,71 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:data_table_lab/main.dart';
 
+/// Returns the given cell texts ordered top to bottom as they appear on screen.
+List<String> rowOrder(WidgetTester tester, List<String> texts) {
+  final sorted = [...texts]
+    ..sort(
+      (a, b) => tester
+          .getTopLeft(find.text(a))
+          .dy
+          .compareTo(tester.getTopLeft(find.text(b)).dy),
+    );
+  return sorted;
+}
+
+const makes = ['Honda', 'Toyota', 'BMW'];
+
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('Shows title, headers and cars in default order', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(find.text('Lab 05: Exercise B'), findsOneWidget);
+    for (final header in ['Car Make', 'Model', 'Price']) {
+      expect(find.text(header), findsOneWidget);
+    }
+    expect(rowOrder(tester, makes), ['Honda', 'Toyota', 'BMW']);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  testWidgets('Tapping Car Make sorts ascending by make', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const MyApp());
+    await tester.tap(find.text('Car Make'));
+    await tester.pumpAndSettle();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(rowOrder(tester, makes), ['BMW', 'Honda', 'Toyota']);
+  });
+
+  testWidgets('Tapping Model sorts ascending by model year', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const MyApp());
+    await tester.tap(find.text('Model'));
+    await tester.pumpAndSettle();
+
+    expect(rowOrder(tester, ['2021', '2011', '2010']), [
+      '2010',
+      '2011',
+      '2021',
+    ]);
+    expect(rowOrder(tester, makes), ['BMW', 'Toyota', 'Honda']);
+  });
+
+  testWidgets('Tapping Price sorts ascending by price', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const MyApp());
+    await tester.tap(find.text('Price'));
+    await tester.pumpAndSettle();
+
+    expect(rowOrder(tester, ['35000', '6000', '9000']), [
+      '6000',
+      '9000',
+      '35000',
+    ]);
+    expect(rowOrder(tester, makes), ['Toyota', 'BMW', 'Honda']);
   });
 }
